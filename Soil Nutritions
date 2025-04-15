@@ -1,87 +1,54 @@
 #define BLYNK TEMPLATE_ID "TMPL3vaQvHpEz"
-
 #define BLYNK_TEMPLATE NAME "Soil Nutrition Monitoring System"
-
 #define BLYNK_AUTH_TOKEN "FgevmQkf3Z0ets9NkcUOdsatAHKmk4Vi
 
 #include <Wire.h>
-
 #include <LiquidCrystal_I2C.h>
-
 #include "DHT.h"
-
 #include <WiFi.h>
-
 #include <WiFiClient.h>
-
 #include <BlynkSimpleEsp32.h>
-
 #include <Stepper.h>
 
 // WiFi credentials.
-
 char ssid[] "Gopika"; // Replace with your WIFI SSTO
-
 char pass[] = "gopika3704"; // Replace with your WSF: Password
 
 #define DHTPIN 21 // DHT22 data pin
-
 #define DHTTYPE DHT22
-
 #define BUZZER PIN 18
-
 #define MOTOR PIN 19
-
 #define WIND _SENSOR_PIN 34
-
 #define STEP ΡΙΝ 26
-
 #define DIR PIN 27
-
 #define ENABLE PIN 25
 
 DHT dht (DHTPIN, DHTTYPE);
-
 LiquidCrystal_I2C 1cd(0x27, 16, 2); // LCD address and dimensions.
-
 const int stepsPerRevolution 200; // Number steps per revolution for your motor
-
 Stepper myStepper(stepsPerRevolution, STEP PIN, DIR PIN); //Initialize the
-
 stepper library on the pins you are using
 
 void setup() {
-
 Serial.begin(115200);
-
 dht.begin();
-
 lcd.init();
-
 lcd.backlight();
 
 pinMode(BUZZER PIN, OUTPUT);
-
 pinMode(MOTOR PIN, OUTPUT);
-
 pinMode(WIND SENSOR PIN, INPUT);
-
 pinMode(ENABLE PIN, OUTPUT);
 
 digitalWrite(ENABLE PIN, LOW); // Enable the driver
-
 lcd.setCursor(0, 0);
-
 lcd.print("Soil Health");
 
 // Connect to Wifi
-
 Serial.println("Connecting to WiFi");
 
 WiFi.disconnect(true); // Reset the Wifi module
-
 delay(1000);
-
 WiFi.begin(ssid, pass);
 
 unsigned long startAttemptTime = millis();
