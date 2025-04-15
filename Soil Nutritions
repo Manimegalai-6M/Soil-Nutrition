@@ -1,0 +1,250 @@
+#define BLYNK TEMPLATE_ID "TMPL3vaQvHpEz"
+
+#define BLYNK_TEMPLATE NAME "Soil Nutrition Monitoring System"
+
+#define BLYNK_AUTH_TOKEN "FgevmQkf3Z0ets9NkcUOdsatAHKmk4Vi
+
+#include <Wire.h>
+
+#include <LiquidCrystal_I2C.h>
+
+#include "DHT.h"
+
+#include <WiFi.h>
+
+#include <WiFiClient.h>
+
+#include <BlynkSimpleEsp32.h>
+
+#include <Stepper.h>
+
+// WiFi credentials.
+
+char ssid[] "Gopika"; // Replace with your WIFI SSTO
+
+char pass[] = "gopika3704"; // Replace with your WSF: Password
+
+#define DHTPIN 21 // DHT22 data pin
+
+#define DHTTYPE DHT22
+
+#define BUZZER PIN 18
+
+#define MOTOR PIN 19
+
+#define WIND _SENSOR_PIN 34
+
+#define STEP ΡΙΝ 26
+
+#define DIR PIN 27
+
+#define ENABLE PIN 25
+
+DHT dht (DHTPIN, DHTTYPE);
+
+LiquidCrystal_I2C 1cd(0x27, 16, 2); // LCD address and dimensions.
+
+const int stepsPerRevolution 200; // Number steps per revolution for your motor
+
+Stepper myStepper(stepsPerRevolution, STEP PIN, DIR PIN); //Initialize the
+
+stepper library on the pins you are using
+
+void setup() {
+
+Serial.begin(115200);
+
+dht.begin();
+
+lcd.init();
+
+lcd.backlight();
+
+pinMode(BUZZER PIN, OUTPUT);
+
+pinMode(MOTOR PIN, OUTPUT);
+
+pinMode(WIND SENSOR PIN, INPUT);
+
+pinMode(ENABLE PIN, OUTPUT);
+
+digitalWrite(ENABLE PIN, LOW); // Enable the driver
+
+lcd.setCursor(0, 0);
+
+lcd.print("Soil Health");
+
+// Connect to Wifi
+
+Serial.println("Connecting to WiFi");
+
+WiFi.disconnect(true); // Reset the Wifi module
+
+delay(1000);
+
+WiFi.begin(ssid, pass);
+
+unsigned long startAttemptTime = millis();
+
+while (WiFi.status() != WL_CONNECTED && millis() startAttemptTime < 10000)
+
+delay(500);
+
+{ // Timeout after 10 seconds }
+
+Serial.print(".");
+
+if (WiFi.status() != WL CONNECTED) {
+
+Serial.println("\nFailed to connect to WiFi"); lcd.setCursor(0, 1); lcd.print("WiFi Failed");
+
+return;
+
+}
+
+Serial.println("\nConnected to WiFi");
+
+Serial.print("IP Address: ");
+
+Serial.println(WiFi.localIP());
+
+// Connect to Blynk
+
+Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
+
+// Wait for Blynk connection while (!Blynk.connected()) { Serial.print(".");
+
+delay(500);
+
+if (Blynk.connected()) {
+
+Serial.println("\nConnected to Blynk");
+
+} else {
+
+Serial.println("\nFailed to connect to Blynk"); Icd.setCursor(0, 1); lcd.print("Blynk Failed"); return;
+
+}
+
+// Test message to ensure setup runs Serial.println("Setup complete");
+
+}
+
+void loop() {
+
+// Run Blynk
+
+Blynk.run();
+
+// Read temperature and humidity from DHT22
+
+float humidity dht.readHumidity();
+
+float temperature dht.readTemperature();
+
+// Check if any reads failed
+
+if (isnan (humidity) || isnan(temperature)) {
+
+Serial.println("Failed to read from DHT sensor!");
+
+lcd.setCursor(0, 1);
+
+1cd.print("DHT Error");
+
+return;
+
+}
+
+// Print temperature and humidity to Serial Monitor for debugging
+
+Serial.print("Temperature: ");
+
+Serial.print(temperature);
+
+Serial.print("C, Humidity: ");
+
+Serial.print(humidity);
+
+Serial.println("%");
+
+// Read wind speed from potentiometer
+
+int windSpeedRaw analogRead(WIND_SENSOR_PIN);
+
+float windSpeed map (windSpeedRaw, 0, 4095, 0, 100); // Example conversion,
+// Print wind speed to Serial Monitor for debugging
+
+Serial.print("Wind Speed Raw: ");
+
+Serial.print(windSpeedRaw);
+
+Serial.print(", Wind Speed: ");
+
+Serial.print(windSpeed);
+
+Serial.println(" m/s");
+
+// Display data on LCD
+
+lcd.setCursor(0, 0);
+
+lcd.print("Temp: ");
+
+lcd.print(temperature);
+
+lcd.print("C");
+
+lcd.setCursor(0, 1);
+
+lcd.print("Hum: ");
+
+lcd.print(humidity);
+
+lcd.print("%");
+
+lcd.setCursor(8, 1);
+
+lcd.print("Wind: ");
+
+lcd.print(windSpeed);
+
+lcd.print("m/s");
+
+// Control buzzer and motor based on sensor data
+
+if (temperature > 30.0) { // Example condition for high temperature
+
+digitalWrite(BUZZER PIN, HIGH);
+
+} else {
+
+digitalWrite(BUZZER PIN, LOW);
+
+if (humidity < 20.0) { // Example condition for low humidity
+
+digitalwrite(MOTOR PIN, HIGH);
+
+if (humidity < 20.0) { // Example condition for low humidity
+
+digitalWrite(MOTOR_PIN, HIGH);
+
+} else {
+
+digitalWrite(MOTOR_PIN, LOW);
+
+}
+
+// Control stepper motor speed based on wind speed
+
+int motorSpeed map (windSpeedRaw, 6, 4895, 0, 1000); // Example mappin
+
+adjust as needed
+
+myStepper.setSpeed(motorSpeed);
+
+myStepper.step(stepsPerRevolution / 100); // Rotate stepper motor
+
+delay(2000); // Delay between readings
+
+}
